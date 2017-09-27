@@ -12,10 +12,37 @@
 <canvas id="vibrationChart" width="800" height="200"></canvas>
 <script>
     (function () {
+        function GetURLParameter(elem) {
+            var sPageURL = window.location.search.substring(1);
+            var sURLVariables = sPageURL.split('&');
+            for (var i = 0; i < sURLVariables.length; i++)
+            {
+                var sParameterName = sURLVariables[i].split('=');
+                if (sParameterName[0] == elem)
+                {
+                    return decodeURIComponent(sParameterName[1]);
+                }
+            }
+        }
 
-        var startTime = '2017-09-27T06:20:20.444';
-        var endTime = '2017-09-27T17:40:49.043';
+        var tminusParam = GetURLParameter('tminus');
+        var startParam = GetURLParameter('start');
+        var endParam = GetURLParameter('end');
 
+        var startTime = moment().subtract(1, 'hours').format();
+        var endTime = moment().format();
+
+        if( !(typeof startParam === 'undefined' && typeof endParam === 'undefined') ) {
+            console.log("between")
+            startTime = startParam;
+            endTime = endParam;
+        }else if ( !(typeof tminusParam === 'undefined') ) {
+            console.log("tminus set")
+            startTime = moment().subtract(tminusParam, 'hours').format();
+        }
+
+        console.log("startTime=" + startTime);
+        console.log("endTime  =" + endTime);
 
         $.when($.ajax({url: `/soundsensor/between/${startTime}/${endTime}`, dataType: 'json'}),
             $.ajax({url: `/vibrationsensor/between/${startTime}/${endTime}`, dataType: 'json'})
