@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test Chart</title>
+    <script src="js/jquery-3.2.1.min.js"></script>
+    <script src="js/Chart.bundle.min.js"></script>
+    <script src="js/moment-with-locales.min.js"></script>
+</head>
+<body>
+<canvas id="soundChart" width="800" height="200"></canvas>
+<canvas id="vibrationChart" width="800" height="200"></canvas>
+<script>
+    (function () {
+
+        var startTime = '2017-09-27T06:20:20.444';
+        var endTime = '2017-09-27T17:40:49.043';
+
+
+        $.when($.ajax({url: `/soundsensor/between/${startTime}/${endTime}`, dataType: 'json'}),
+            $.ajax({url: `/vibrationsensor/between/${startTime}/${endTime}`, dataType: 'json'})
+        )
+            .done(function (soundsensorResult, vibrationSensorResult) {
+                console.log(soundsensorResult);
+                console.log(vibrationSensorResult);
+
+                var soundMaxData = [];
+                var soundAvgData = [];
+                var soundTime = [];
+
+                soundsensorResult[0].forEach(function (soundValue, index) {
+                    soundMaxData.push(soundValue.max);
+                    soundAvgData.push(soundValue.avg);
+
+                    soundTime.push(moment(soundValue.datetime));
+
+                });
+
+                var vibrationData = [];
+                var vibrationTime = [];
+
+                vibrationSensorResult[0].forEach(function (vibrationValue) {
+                    vibrationData.push(vibrationValue.value);
+                    vibrationTime.push(moment(vibrationValue.datetime));
+                });
+
+
+                var ctx = document.getElementById('soundChart').getContext('2d');
+
+                var soundChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: soundTime,
+                        datasets: [{
+                            label: "Sound Avg",
+//                    backgroundColor: 'rgb(244, 114, 22)',
+                            borderColor: 'rgb(244, 114, 22)',
+                            data: soundAvgData,
+                        },{
+                            label: "Sound Max",
+//                    backgroundColor: 'rgb(255, 99, 132)',
+                            borderColor: 'rgb(170, 170, 170)',
+                            data: soundMaxData,
+                        }]
+                    },
+
+                    // Configuration options go here
+                    options: {
+                        scales: {
+                            xAxes: [{
+                                type: "time",
+                                ticks: {
+                                    autoSkip: true,
+                                    maxTicksLimit: 20
+                                },
+                                time: {
+                                    unit: 'second',
+                                    round: 'second',
+                                    displayFormats: {
+                                        day: 'MMM D'
+                                    }
+                                }
+                            }]
+                        }
+                    }
+                });
+
+
+                var vibrationCtx = document.getElementById('vibrationChart').getContext('2d');
+
+                var vibrationChart = new Chart(vibrationCtx, {
+                    type: 'line',
+                    data: {
+                        labels: vibrationTime,
+                        datasets: [{
+                            label: "Vibration",
+                            borderColor: 'rgb(244, 114, 22)',
+                            data: vibrationData,
+                        }]
+                    },
+
+                    // Configuration options go here
+                    options: {
+                        scales: {
+                            xAxes: [{
+                                type: "time",
+                                ticks: {
+                                    autoSkip: true,
+                                    maxTicksLimit: 20
+                                },
+                                time: {
+                                    unit: 'second',
+                                    round: 'second',
+                                    displayFormats: {
+                                        day: 'MMM D'
+                                    }
+                                }
+                            }]
+                        }
+                    }
+                });
+            })
+    })();
+
+</script>
+</body>
+</html>
